@@ -1,2 +1,3 @@
 #!/bin/bash
-g++ -o bin/bncsutils_drv bncsutils_drv.cc -lepapi
+g++ -o bin/bncsutils_drv bncsutils_drv.cc -lepapi -lbncsutil
+
