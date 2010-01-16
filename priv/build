@@ -1,0 +1,3 @@
+#!/bin/bash
+gcc -fPIC -shared -o bncsutil.so bncsutil.c -I /usr/local/lib/erlang/usr/include/ -lbncsutil -Wall
+

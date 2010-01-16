@@ -19,7 +19,7 @@
 	]).
 
 init() ->
-    ok = erlang:load_nif("./bin/bncsutil", 0),
+    ok = erlang:load_nif("../priv/bncsutil", 0),
     true.
 
 %% string()

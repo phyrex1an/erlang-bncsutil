@@ -1,4 +1,4 @@
-bin
+priv/*.so
 *.beam
 *.dump
 *~
