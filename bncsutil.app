@@ -3,5 +3,5 @@
   {vsn,	     	"1"},
   {modules,     [bncsutil]},
   {registered,  []},
-  {applications,[]}
+  {applications,[kernel,stdlib]}
  ]}.
