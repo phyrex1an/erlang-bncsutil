@@ -26,7 +26,7 @@ init() ->
 echo(_Str) ->
     nif_error().
 
-%% {ok, PublicValue = int(), Product = int(), Hash = string()}
+%% {ok, PublicValue = int(), Product = int(), Hash = binary()}
 %% {error, Reason = string()}
 hash_cdkey(_CDKey,_ClientToken,_ServerToken) ->
     nif_error().
