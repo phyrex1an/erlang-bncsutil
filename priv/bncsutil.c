@@ -102,15 +102,19 @@ static ERL_NIF_TERM nif_hash_cdkey(ErlNifEnv* env, ERL_NIF_TERM cd_key_t, ERL_NI
   // Response
   unsigned int public_value;
   unsigned int product;
-  char hash_buffer[4*5+1];
-
-  hash_buffer[4*5]='\0';
+  
+  ErlNifBinary hash;
+  if (!enif_alloc_binary(env, 20, &hash))
+  {
+    enif_free(env, cd_key);
+    return my_enif_make_error(env, "Failed to allocate binary");
+  }
 
   // Other
   size_t buffer_len = 4*5;
   int result;
 
-  result = kd_quick(cd_key, client_token, server_token, &public_value, &product, hash_buffer, buffer_len);
+  result = kd_quick(cd_key, client_token, server_token, &public_value, &product, (char*)hash.data, buffer_len);
   enif_free(env, cd_key);
   if(!result)
   {
@@ -122,7 +126,7 @@ static ERL_NIF_TERM nif_hash_cdkey(ErlNifEnv* env, ERL_NIF_TERM cd_key_t, ERL_NI
 			 enif_make_atom(env, "ok"),
 			 enif_make_int(env, public_value),
 			 enif_make_int(env, product),
-			 enif_make_string(env, hash_buffer));
+			 enif_make_binary(env, &hash));
 }
 
 static ERL_NIF_TERM nif_extract_mpq_number(ErlNifEnv* env, ERL_NIF_TERM mpq_name_t)
