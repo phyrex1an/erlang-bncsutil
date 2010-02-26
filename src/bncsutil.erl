@@ -18,8 +18,7 @@
 	]).
 
 init() ->
-    ok = erlang:load_nif("/home/phyrex1an/git/erlang-bncsutil/priv/bncsutil", 0),
-    true.
+    erlang:load_nif("/home/phyrex1an/git/erlang-bncsutil/priv/bncsutil", 0).
 
 %% {ok, PublicValue = int(), Product = int(), Hash = binary()}
 %% {error, Reason = string()}
