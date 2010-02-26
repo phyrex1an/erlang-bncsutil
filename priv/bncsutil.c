@@ -7,7 +7,7 @@ static ERL_NIF_TERM my_enif_make_error(ErlNifEnv *env, char *msg)
 {
   return enif_make_tuple(env, 2,
 			 enif_make_atom(env, "error"),
-			 enif_make_string(env, msg));
+			 enif_make_string(env, msg, ERL_NIF_LATIN1));
 }
 
 static int my_enif_list_size(ErlNifEnv* env, ERL_NIF_TERM list)
@@ -41,7 +41,7 @@ static char* my_enif_get_string(ErlNifEnv *env, ERL_NIF_TERM list)
 }
 
 
-static ERL_NIF_TERM nif_hash_cdkey(ErlNifEnv* env, ERL_NIF_TERM cd_key_t, ERL_NIF_TERM client_token_t, ERL_NIF_TERM server_token_t)
+static ERL_NIF_TERM nif_hash_cdkey(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
   // kd_quick(const char* cd_key, uint32_t client_token,
   //				   uint32_t server_token, uint32_t* public_value,
@@ -49,16 +49,16 @@ static ERL_NIF_TERM nif_hash_cdkey(ErlNifEnv* env, ERL_NIF_TERM cd_key_t, ERL_NI
 
   // Params
   unsigned long client_token;
-  if (!enif_get_ulong(env, client_token_t, &client_token))
+  if (!enif_get_ulong(env, argv[1], &client_token))
   {
     return enif_make_badarg(env);
   }
   unsigned long server_token;
-  if (!enif_get_ulong(env, server_token_t, &server_token))
+  if (!enif_get_ulong(env, argv[2], &server_token))
   {
     return enif_make_badarg(env);
   }
-  char* cd_key = my_enif_get_string(env, cd_key_t);
+  char* cd_key = my_enif_get_string(env, argv[0]);
   if (!cd_key)
   {
     return enif_make_badarg(env);
@@ -94,9 +94,9 @@ static ERL_NIF_TERM nif_hash_cdkey(ErlNifEnv* env, ERL_NIF_TERM cd_key_t, ERL_NI
 			 enif_make_binary(env, &hash));
 }
 
-static ERL_NIF_TERM nif_extract_mpq_number(ErlNifEnv* env, ERL_NIF_TERM mpq_name_t)
+static ERL_NIF_TERM nif_extract_mpq_number(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
-  char *mpq_name = my_enif_get_string(env, mpq_name_t);
+  char *mpq_name = my_enif_get_string(env, argv[0]);
   if (!mpq_name)
   {
     return enif_make_badarg(env);
@@ -113,28 +113,25 @@ static ERL_NIF_TERM nif_extract_mpq_number(ErlNifEnv* env, ERL_NIF_TERM mpq_name
 			 enif_make_int(env, response));
 }
 
-static ERL_NIF_TERM nif_check_revision(ErlNifEnv* env, 
-				       ERL_NIF_TERM value_string_t,
-				       ERL_NIF_TERM files_t,
-				       ERL_NIF_TERM mpq_number_t)
+static ERL_NIF_TERM nif_check_revision(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
   char *value_string;
   char **files;
   int num_files;
   int mpq_number;
 
-  if (!enif_get_int(env, mpq_number_t, &mpq_number))
+  if (!enif_get_int(env, argv[2], &mpq_number))
   {
     return enif_make_badarg(env);
   }
 
-  value_string = my_enif_get_string(env, value_string_t);
+  value_string = my_enif_get_string(env, argv[0]);
   if (!value_string)
   {
     return enif_make_badarg(env);
   }
 
-  num_files = my_enif_list_size(env, files_t);
+  num_files = my_enif_list_size(env, argv[1]);
   if (num_files>0)
   {
     files = enif_alloc(env, sizeof(char*)*num_files);
@@ -145,7 +142,7 @@ static ERL_NIF_TERM nif_check_revision(ErlNifEnv* env,
     }
     int i=0;
     ERL_NIF_TERM tail, head, nexttail;
-    tail = files_t;
+    tail = argv[1];
     while(enif_get_list_cell(env, tail, &head, &nexttail))
     {
       tail = nexttail;
@@ -185,19 +182,17 @@ static ERL_NIF_TERM nif_check_revision(ErlNifEnv* env,
 			 enif_make_ulong(env, checksum));
 }
 
-static ERL_NIF_TERM nif_get_exe_version(ErlNifEnv* env, 
-					ERL_NIF_TERM file_name_t, 
-					ERL_NIF_TERM platform_t)
+static ERL_NIF_TERM nif_get_exe_version(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
   char *file_name;
   int platform;
   
-  if (!enif_get_int(env, platform_t, &platform))
+  if (!enif_get_int(env, argv[1], &platform))
   {
     return enif_make_badarg(env);
   }
   
-  file_name = my_enif_get_string(env, file_name_t);
+  file_name = my_enif_get_string(env, argv[0]);
   if (!file_name)
   {
     return enif_make_badarg(env);
@@ -217,7 +212,7 @@ static ERL_NIF_TERM nif_get_exe_version(ErlNifEnv* env,
       enif_free(env, file_name);
       return my_enif_make_error(env, "ExeInfo retry failed");
     }
-    exe_info_t = enif_make_string(env, exe_info_d);
+    exe_info_t = enif_make_string(env, exe_info_d, ERL_NIF_LATIN1);
     enif_free(env, exe_info_d);
   }
   else
@@ -227,7 +222,7 @@ static ERL_NIF_TERM nif_get_exe_version(ErlNifEnv* env,
       enif_free(env, file_name);
       return my_enif_make_error(env, "ExeInfo failed");
     }
-    exe_info_t = enif_make_string(env, exe_info);
+    exe_info_t = enif_make_string(env, exe_info, ERL_NIF_LATIN1);
   }
   enif_free(env, file_name);
   return enif_make_tuple(env, 3,
@@ -236,19 +231,17 @@ static ERL_NIF_TERM nif_get_exe_version(ErlNifEnv* env,
 			 enif_make_int(env, version));
 }
 
-static ERL_NIF_TERM nif_nls_init(ErlNifEnv *env,
-				 ERL_NIF_TERM username_t,
-				 ERL_NIF_TERM password_t)
+static ERL_NIF_TERM nif_nls_init(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
   char *username;
   char *password;
 
-  username = my_enif_get_string(env, username_t);
+  username = my_enif_get_string(env, argv[0]);
   if(!username)
   {
     return enif_make_badarg(env);
   }
-  password = my_enif_get_string(env, password_t);
+  password = my_enif_get_string(env, argv[1]);
   if (!password)
   {
     enif_free(env, username);
@@ -264,11 +257,10 @@ static ERL_NIF_TERM nif_nls_init(ErlNifEnv *env,
 			 enif_make_ulong(env, (long)nls));
 }
 
-static ERL_NIF_TERM nif_nls_free(ErlNifEnv *env,
-				 ERL_NIF_TERM nls_t)
+static ERL_NIF_TERM nif_nls_free(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
   unsigned long nls;
-  if (!enif_get_ulong(env, nls_t, &nls))
+  if (!enif_get_ulong(env, argv[0], &nls))
   {
     return enif_make_badarg(env);
   }
@@ -277,27 +269,24 @@ static ERL_NIF_TERM nif_nls_free(ErlNifEnv *env,
 			 enif_make_atom(env, "ok"));
 }
 
-static ERL_NIF_TERM nif_nls_get_S(ErlNifEnv *env,
-				  ERL_NIF_TERM nls_t,
-				  ERL_NIF_TERM B_t,
-				  ERL_NIF_TERM salt_t)
+static ERL_NIF_TERM nif_nls_get_S(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
   
   unsigned long nls;
   ErlNifBinary B;
   ErlNifBinary salt;
 
-  if (!enif_get_ulong(env, nls_t, &nls))
+  if (!enif_get_ulong(env, argv[0], &nls))
   {
     return enif_make_badarg(env);
   }
 
-  if (!enif_inspect_binary(env, B_t, &B))
+  if (!enif_inspect_binary(env, argv[1], &B))
   {
     return enif_make_badarg(env);
   }
 
-  if (!enif_inspect_binary(env, salt_t, &salt))
+  if (!enif_inspect_binary(env, argv[2], &salt))
   {
     enif_release_binary(env, &B);
     return enif_make_badarg(env);
@@ -323,19 +312,17 @@ static ERL_NIF_TERM nif_nls_get_S(ErlNifEnv *env,
 			 enif_make_binary(env, &S));
 }
 
-static ERL_NIF_TERM nif_nls_get_v(ErlNifEnv *env,
-				  ERL_NIF_TERM nls_t,
-				  ERL_NIF_TERM salt_t)
+static ERL_NIF_TERM nif_nls_get_v(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
   unsigned long nls;
   ErlNifBinary salt;
   
-  if (!enif_get_ulong(env, nls_t, &nls))
+  if (!enif_get_ulong(env, argv[0], &nls))
   {
     return enif_make_badarg(env);
   }
 
-  if (!enif_inspect_binary(env, salt_t, &salt))
+  if (!enif_inspect_binary(env, argv[1], &salt))
   {
     return enif_make_badarg(env);
   }
@@ -358,12 +345,11 @@ static ERL_NIF_TERM nif_nls_get_v(ErlNifEnv *env,
 			 enif_make_binary(env, &v));
 }
 
-static ERL_NIF_TERM nif_nls_get_A(ErlNifEnv *env,
-				  ERL_NIF_TERM nls_t)
+static ERL_NIF_TERM nif_nls_get_A(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
   unsigned long nls;
   
-  if (!enif_get_ulong(env, nls_t, &nls))
+  if (!enif_get_ulong(env, argv[0], &nls))
   {
     return enif_make_badarg(env);
   }
@@ -382,19 +368,17 @@ static ERL_NIF_TERM nif_nls_get_A(ErlNifEnv *env,
 			 enif_make_binary(env, &A));
 }
 
-static ERL_NIF_TERM nif_nls_get_K(ErlNifEnv *env,
-				  ERL_NIF_TERM nls_t,
-				  ERL_NIF_TERM S_t)
+static ERL_NIF_TERM nif_nls_get_K(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
   unsigned long nls;
   ErlNifBinary S;
   
-  if (!enif_get_ulong(env, nls_t, &nls))
+  if (!enif_get_ulong(env, argv[0], &nls))
   {
     return enif_make_badarg(env);
   }
 
-  if (!enif_inspect_binary(env, S_t, &S))
+  if (!enif_inspect_binary(env, argv[1], &S))
   {
     return enif_make_badarg(env);
   }
@@ -417,26 +401,23 @@ static ERL_NIF_TERM nif_nls_get_K(ErlNifEnv *env,
 			 enif_make_binary(env, &K));
 }
 
-static ERL_NIF_TERM nif_nls_get_M1(ErlNifEnv *env,
-				   ERL_NIF_TERM nls_t,
-				   ERL_NIF_TERM B_t,
-				   ERL_NIF_TERM salt_t)
+static ERL_NIF_TERM nif_nls_get_M1(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
   unsigned long nls;
   ErlNifBinary B;
   ErlNifBinary salt;
   
-  if (!enif_get_ulong(env, nls_t, &nls))
+  if (!enif_get_ulong(env, argv[0], &nls))
   {
     return enif_make_badarg(env);
   }
 
-  if (!enif_inspect_binary(env, B_t, &B))
+  if (!enif_inspect_binary(env, argv[1], &B))
   {
     return enif_make_badarg(env);
   }
 
-  if (!enif_inspect_binary(env, salt_t, &salt))
+  if (!enif_inspect_binary(env, argv[2], &salt))
   {
     enif_release_binary(env, &B);
     return enif_make_badarg(env);
@@ -463,20 +444,18 @@ static ERL_NIF_TERM nif_nls_get_M1(ErlNifEnv *env,
 			 enif_make_binary(env, &M1));
 }
 
-static ERL_NIF_TERM nif_nls_check_M2(ErlNifEnv *env,
-				     ERL_NIF_TERM nls_t,
-				     ERL_NIF_TERM m2_t)
+static ERL_NIF_TERM nif_nls_check_M2(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
 
   unsigned long nls;
   ErlNifBinary M2;
 
-  if (!enif_get_ulong(env, nls_t, &nls))
+  if (!enif_get_ulong(env, argv[0], &nls))
   {
     return enif_make_badarg(env);
   }
   
-  if (!enif_inspect_binary(env, m2_t, &M2))
+  if (!enif_inspect_binary(env, argv[1], &M2))
   {
     return enif_make_badarg(env);
   }
@@ -497,20 +476,18 @@ static ERL_NIF_TERM nif_nls_check_M2(ErlNifEnv *env,
   }
 }
 
-static ERL_NIF_TERM nif_nls_check_signature(ErlNifEnv *env,
-				     ERL_NIF_TERM address_t,
-				     ERL_NIF_TERM signature_raw_t)
+static ERL_NIF_TERM nif_nls_check_signature(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
 
   unsigned long address;
   ErlNifBinary signature_raw;
 
-  if (!enif_get_ulong(env, address_t, &address))
+  if (!enif_get_ulong(env, argv[0], &address))
   {
     return enif_make_badarg(env);
   }
   
-  if (!enif_inspect_binary(env, signature_raw_t, &signature_raw))
+  if (!enif_inspect_binary(env, argv[1], &signature_raw))
   {
     return enif_make_badarg(env);
   }
