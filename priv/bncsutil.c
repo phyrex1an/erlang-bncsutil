@@ -2,7 +2,6 @@
 
 #include "erl_nif.h"
 #include "bncsutil/bncsutil.h"
-#include <stdio.h>
 
 static ERL_NIF_TERM my_enif_make_error(ErlNifEnv *env, char *msg)
 {
@@ -52,13 +51,6 @@ static char* my_enif_get_string(ErlNifEnv *env, ERL_NIF_TERM list)
   
   buf[size]='\0';
   return buf;
-}
-
-void debug(char* msg)
-{
-  FILE* dbg = fopen("debug.txt", "a");
-  fprintf(dbg, "%s\n", msg);
-  fclose(dbg);
 }
 
 
