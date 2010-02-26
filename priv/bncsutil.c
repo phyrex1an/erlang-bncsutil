@@ -26,33 +26,19 @@ static int my_enif_list_size(ErlNifEnv* env, ERL_NIF_TERM list)
 static char* my_enif_get_string(ErlNifEnv *env, ERL_NIF_TERM list)
 {
   char *buf;
-  ERL_NIF_TERM head, tail, nexttail;
   int size=my_enif_list_size(env, list);
-  int cell;
 
   if (!(buf = (char*) enif_alloc(env, size+1)))
   {
     return NULL;
   }
-  
-  tail = list;
-  size=0;
-  while(enif_get_list_cell(env, tail, &head, &nexttail))
+  if (enif_get_string(env, list, buf, size+1, ERL_NIF_LATIN1)<1)
   {
-    tail = nexttail;
-    if (!enif_get_int(env, head, &cell)) 
-    {
-      enif_free(env, buf);
-      return NULL;
-    }
-    buf[size] = (char)cell;
-    size++;
+    enif_free(env, buf);
+    return NULL;
   }
-  
-  buf[size]='\0';
   return buf;
 }
-
 
 static ERL_NIF_TERM nif_echo(ErlNifEnv* env, ERL_NIF_TERM str)
 {
