@@ -40,19 +40,6 @@ static char* my_enif_get_string(ErlNifEnv *env, ERL_NIF_TERM list)
   return buf;
 }
 
-static ERL_NIF_TERM nif_echo(ErlNifEnv* env, ERL_NIF_TERM str)
-{
-  ERL_NIF_TERM resp;
-  char* e;
-  if (!(e = my_enif_get_string(env, str)))
-  {
-    return enif_make_badarg(env);
-  }
-  resp = enif_make_string(env, e);
-  enif_free(env, e);
-  return resp;
-}
-
 
 static ERL_NIF_TERM nif_hash_cdkey(ErlNifEnv* env, ERL_NIF_TERM cd_key_t, ERL_NIF_TERM client_token_t, ERL_NIF_TERM server_token_t)
 {
@@ -549,7 +536,6 @@ static ERL_NIF_TERM nif_nls_check_signature(ErlNifEnv *env,
 
 static ErlNifFunc nif_funcs[] = 
 {
-  {"echo", 1, (void*)nif_echo},
   {"hash_cdkey", 3, (void*)nif_hash_cdkey},
   {"extract_mpq_number", 1, (void*)nif_extract_mpq_number},
   {"check_revision", 3, (void*)nif_check_revision},

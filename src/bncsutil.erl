@@ -2,8 +2,7 @@
 -on_load(init/0).
 -export([init/0]).
 
--export([echo/1,
-	 hash_cdkey/3,
+-export([hash_cdkey/3,
 	 extract_mpq_number/1,
 	 check_revision/3,
 	 get_exe_version/2,
@@ -21,10 +20,6 @@
 init() ->
     ok = erlang:load_nif("/home/phyrex1an/git/erlang-bncsutil/priv/bncsutil", 0),
     true.
-
-%% string()
-echo(_Str) ->
-    nif_error().
 
 %% {ok, PublicValue = int(), Product = int(), Hash = binary()}
 %% {error, Reason = string()}
